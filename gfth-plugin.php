@@ -18,6 +18,7 @@ add_action('admin_menu', 'gfth_add_pages');
 function gfth_add_pages()
 {
     global $gfth_settings;
+	define('WP_DEBUG', true);
     $gfth_settings = add_menu_page(__('Gifts From The Heart', 'gfth'), __('Gifts From The Heart', 'gfth'), 'manage_options', 'gfth', 'gfth_top_page');
 }
 
@@ -83,6 +84,13 @@ function gfth_top_page()
                 &nbsp;&nbsp;&nbsp;
                 <span id="gfth_loading_delete_text" class="gfth_working blink">Working...</span>
             </form>
+            <p>
+                <!--<form id="form_fix" class="fix" method="post">-->
+                <!--<input type="text" id="child_id"/>-->
+                <!--<br><input type="submit" id="fix" class="button-primary" name="fix" value="Fix ID">-->
+            <!--</form>-->
+            </p>
+            <div id="fix_response"
         </div>
     </div>
     <?php
@@ -123,6 +131,10 @@ function gfth_process_ajax()
     } else if($_POST['do'] == 'delete_drafts') {
         new delete_drafts();
         exit;
+    } else if ($_POST['do'] == 'fix_id') {
+        fix_id($_POST['id']);
+        exit;
+
     } else if($_POST['do'] == 'update_prices') {
         if (empty($_FILES['csv']['name']) || $_FILES['csv']['error'] > 0) {
             echo "<script type='text/javascript'> alert('Please select a valid file...')</script>";
@@ -134,7 +146,7 @@ function gfth_process_ajax()
         new prices_import($csvAsArray);
 
         exit;
-    } else if ($_POST['do'] == 'upload_products'){
+    } else {
 
         if (empty($_FILES['csv']['name']) || $_FILES['csv']['error'] > 0) {
             echo "<script type='text/javascript'> alert('Please select a valid file...')</script>";
@@ -147,11 +159,16 @@ function gfth_process_ajax()
             new import_new_products($csvAsArray, true);
         elseif ($_POST['test'] == "No")
             new import_new_products($csvAsArray, false);
-
-        exit;
+        else
+            echo "<script type='text/javascript'> alert('Dyo screwed up...')</script>";
     }
-    echo "<script type='text/javascript'> alert('Something went wrong...')</script>";
     exit;
 }
 add_action('wp_ajax_gfth_get_results', 'gfth_process_ajax');
 
+function fix_id($id) {
+    $parentid = get_post_ancestors($id);
+    $sku = get_post_meta($parentid[0], '_sku', true);
+    update_post_meta($parentid[0], '_sku', '');
+    update_post_meta($id, '_sku', $sku);
+}

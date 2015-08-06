@@ -129,5 +129,28 @@ jQuery(document).ready(function ($) {
 
         return false;
     });
+
+    $('#form_fix').submit(function () {
+
+        var form_data = new FormData();
+        form_data.append('id', $('#child_id').val());
+        form_data.append('do', 'fix_id');
+        form_data.append('action', 'gfth_get_results');
+        form_data.append('gfth_nonce', gfth_vars.gfth_nonce);
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: form_data,
+            success: function (response) {
+                $('#fix_response').html(response);
+                $('#child_id').val('')
+            }});
+
+        return false;
+    });
 });
 
