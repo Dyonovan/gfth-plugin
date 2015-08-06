@@ -1,0 +1,29 @@
+.form_add_product {
+    font-size: 16px;
+}
+
+.gfth_working {
+    display: none;
+    color: #ff240b;
+}
+
+.progress {
+    display: none;
+}
+
+
+.blink {
+    animation-duration: 1s;
+    animation-name: blink;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: ease-in-out;
+}
+@keyframes blink {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
