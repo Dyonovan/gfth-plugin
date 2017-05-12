@@ -7,7 +7,8 @@ class import_new_products
     {
         set_time_limit(0);
         wp_suspend_cache_invalidation(true);
-        wp_defer_term_counting(true);
+        wp_suspend_cache_addition(true);
+        //wp_defer_term_counting(true);
 
         $title = '';
         $first_run = true;
@@ -73,7 +74,8 @@ class import_new_products
             echo '<br><span style="color: #ff0000">Failed Variations ' . $countVariationFailed . '</span>';
 
         wp_suspend_cache_invalidation(false);
-        wp_defer_term_counting(false);
+        wp_suspend_cache_addition(false);
+        //wp_defer_term_counting(false);
         exit;
     }
 
@@ -131,12 +133,17 @@ class import_new_products
         //update_post_meta($new_post_id, 'attribute_pa_size', (string)$data[4]);
         update_post_meta($new_post_id, 'attribute_pa_size', (string)$size->slug);
         update_post_meta($new_post_id, '_sku', $data[2]);
-        update_post_meta($new_post_id, '_price', str_replace('$', '', $data[5]));
-        update_post_meta($new_post_id, '_regular_price', str_replace('$', '', $data[5]));
+        update_post_meta($new_post_id, '_price', str_replace('$', '', $data[7]));
+        update_post_meta($new_post_id, '_regular_price', str_replace('$', '', $data[7]));
         if ($bb == 'Yes')
             update_post_meta($new_post_id, 'attribute_pa_barnboard-frame', strtolower((string)$data[3]));
         update_post_meta($new_post_id, '_stock_status', 'instock');
         update_post_meta($new_post_id, '_visibility', 'visible');
+		if (!empty($data[5])) {
+			update_post_meta($new_post_id, 'min_max_rules', 'yes');
+			update_post_meta($new_post_id, 'variation_minimum_allowed_quantity', $data[5]);
+			update_post_meta($new_post_id, 'variation_group_of_quantity', $data[6]);
+		}
 
         echo '<span style="color: #00ff00">Success</span><br>';
 
@@ -165,7 +172,7 @@ class import_new_products
         );
 
         //get Catagory
-        $cats = explode('|', $data[7]);
+        $cats = explode('|', $data[9]);
         $cat_array = array();
         foreach ($cats as $cat) {
             $temp = get_term_by('slug', $cat, 'product_cat');
@@ -196,7 +203,7 @@ class import_new_products
             return false;
         }
 
-        if ($data[5] = 'Yes')
+        if ($data[3] = 'Yes')
             wp_set_object_terms($new_post_id, array(73, 74), 'pa_barnboard-frame');
 
         $the_data = Array(
@@ -222,15 +229,15 @@ class import_new_products
         update_post_meta($new_post_id, '_visibility', 'visible');
 
         //Add Tags
-        $tags = explode(',', $data[6]);
+        $tags = explode(',', $data[8]);
         wp_set_object_terms($new_post_id, array_map('trim', $tags), 'product_tag');
 
         //Attach pic
         $upload_dir = wp_upload_dir();
-        $filename = $upload_dir['basedir'] . '/gfth-pics/' . $data[8];
+        $filename = $upload_dir['basedir'] . '/gfth-pics/' . $data[10];
         $filetype = wp_check_filetype(basename($filename), null);
 
-        if (empty(trim($data[8])) || !file_exists($filename)) {
+        if (empty(trim($data[10])) || !file_exists($filename)) {
             echo '<span style="color: #ff0000">Failed! (Cannot find picture)</span><br>';
         } else {
 
