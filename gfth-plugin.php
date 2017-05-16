@@ -3,7 +3,7 @@
 /*
 Plugin Name: GFTH Custom Plugin
 Description: Custom Plugin for GiftsFromTheHeart.ca
-Version: 1.0
+Version: 1.1
 Author: James Rogers
 Author URI: http://dyonovan.com
 */

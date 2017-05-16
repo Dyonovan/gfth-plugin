@@ -45,15 +45,18 @@ class import_new_products
             } else if ($post_id != false) {
 
                 //Add variation
-                list ($varSuccess, $id) = $this->add_variation($title, $line, $post_id, $bb);
-                if (!$varSuccess) {
-                    $countVariationFailed++;
-                } else {
-                    $countVariation++;
-                    if (!$test)
-                        if (!in_array($id, $ids)) {
-                            array_push($ids, $id);
-                        }
+                if ($line[3] == 'No') {
+
+                    list ($varSuccess, $id) = $this->add_variation($title, $line, $post_id, $line[3]);
+                    if (!$varSuccess) {
+                        $countVariationFailed++;
+                    } else {
+                        $countVariation++;
+                        if (!$test)
+                            if (!in_array($id, $ids)) {
+                                array_push($ids, $id);
+                            }
+                    }
                 }
             }
             ob_flush();
@@ -108,17 +111,15 @@ class import_new_products
                 'is_create_taxonomy_terms' => '1'
             ));
 
-        if ($data[3] == "Yes") {
-            $the_data = array_merge($the_data, Array(
-                'pa_barnboard-frame' => Array(
-                    'name' => 'pa_barnboard-frame',
-                    'value' => '',
-                    'is_visible' => '1',
-                    'is_variation' => '1',
-                    'is_taxonomy' => '1',
-                    'is_create_taxonomy_terms' => '1'
-                )));
-        }
+        $the_data = array_merge($the_data, Array(
+            'pa_barnboard-frame' => Array(
+                'name' => 'pa_barnboard-frame',
+                'value' => '',
+                'is_visible' => '1',
+                'is_variation' => '1',
+                'is_taxonomy' => '1',
+                'is_create_taxonomy_terms' => '1'
+            )));
         update_post_meta($new_post_id, '_product_attributes', $the_data);
 
         //Set sizes in both product and variable
@@ -135,16 +136,23 @@ class import_new_products
         update_post_meta($new_post_id, '_sku', $data[2]);
         update_post_meta($new_post_id, '_price', str_replace('$', '', $data[7]));
         update_post_meta($new_post_id, '_regular_price', str_replace('$', '', $data[7]));
-        if ($bb == 'Yes')
-            update_post_meta($new_post_id, 'attribute_pa_barnboard-frame', strtolower((string)$data[3]));
+        update_post_meta($new_post_id, 'attribute_pa_barnboard-frame', strtolower($bb));
         update_post_meta($new_post_id, '_stock_status', 'instock');
         update_post_meta($new_post_id, '_visibility', 'visible');
-		if (!empty($data[5])) {
-			update_post_meta($new_post_id, 'min_max_rules', 'yes');
-			update_post_meta($new_post_id, 'variation_minimum_allowed_quantity', $data[5]);
-			update_post_meta($new_post_id, 'variation_group_of_quantity', $data[6]);
-		}
+        if (!empty($data[5])) {
+            update_post_meta($new_post_id, 'min_max_rules', 'yes');
+            update_post_meta($new_post_id, 'variation_minimum_allowed_quantity', $data[5]);
+            update_post_meta($new_post_id, 'variation_group_of_quantity', $data[6]);
+        }
 
+        if ($bb == 'No') {
+            $oldSku = $data[2];
+            $data[2] = substr($oldSku, 0, 6) . 'BB';
+            $oldPrice = $data[7];
+            $newPrice = $this->get_new_price((string)$size->slug, $oldPrice, $oldSku, $title);
+            $data[7] = $newPrice;
+            $this->add_variation($title, $data, $post_id, 'Yes');
+        }
         echo '<span style="color: #00ff00">Success</span><br>';
 
         return array(true, $post_id);
@@ -203,8 +211,8 @@ class import_new_products
             return false;
         }
 
-        if ($data[3] = 'Yes')
-            wp_set_object_terms($new_post_id, array(73, 74), 'pa_barnboard-frame');
+        //if ($data[3] = 'Yes')
+        wp_set_object_terms($new_post_id, array(73, 74), 'pa_barnboard-frame');
 
         $the_data = Array(
             'pa_size' => Array(
@@ -215,15 +223,15 @@ class import_new_products
                 'is_taxonomy' => '1'
             ));
 
-        if ($data[3] == "Yes") {
-            $the_data = array_merge($the_data, Array(
-                'pa_barnboard-frame' => Array(
-                    'name' => 'pa_barnboard-frame',
-                    'value' => '',
-                    'is_visible' => '1',
-                    'is_variation' => '1',
-                    'is_taxonomy' => '1')));
-        }
+        //if ($data[3] == "Yes") {
+        $the_data = array_merge($the_data, Array(
+            'pa_barnboard-frame' => Array(
+                'name' => 'pa_barnboard-frame',
+                'value' => 'Yes',
+                'is_visible' => '1',
+                'is_variation' => '1',
+                'is_taxonomy' => '1')));
+        //}
         update_post_meta($new_post_id, '_product_attributes', $the_data);
 
         update_post_meta($new_post_id, '_visibility', 'visible');
@@ -265,6 +273,80 @@ class import_new_products
         }
         echo '<span style="color: #00ff00">Success</span><br>';
         return $new_post_id;
+    }
+
+    function get_new_price($size, $price, $sku, $title)
+    {
+        switch ($size) {
+            case "5x9": //using slug so all lowercase
+                break;
+            case "6x8":
+                break;
+            case "10x18":
+                $price += 10;
+                break;
+            case "12x16":
+                $price += 10;
+                break;
+            case "14x14":
+                $price += 10;
+                break;
+            case "20x26":
+                $price += 20;
+                break;
+            case "19x34":
+                $price += 20;
+                break;
+            case "16x16":
+                $price += 20;
+                break;
+            case "10x24":
+                $price += 20;
+                break;
+            case "16x21":
+                $price += 20;
+                break;
+            case "14x24":
+                $price += 20;
+                break;
+            case "20x20":
+                $price += 20;
+                break;
+            case "24x24":
+                $price += 20;
+                break;
+            case "16x37":
+                $price += 20;
+                break;
+            case "28x28":
+                $price += 30;
+                break;
+            case "18x44":
+                $price += 30;
+                break;
+            case "32x32":
+                $price += 30;
+                break;
+            case "28x37":
+                $price += 30;
+                break;
+            case "24x44":
+                $price += 30;
+                break;
+            case "23x54":
+                $price += 40;
+                break;
+            case "30x54":
+                $price += 40;
+                break;
+            case "38x50":
+                $price += 40;
+                break;
+            default:
+                echo 'Missing Size ' . $title . ' - ' . $sku . ' - ' . $size . '<BR>';
+        }
+
+        return $price;
     }
 }
 
