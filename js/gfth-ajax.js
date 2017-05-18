@@ -2,6 +2,31 @@
  * Created by jrogers on 30/07/15.
  */
 jQuery(document).ready(function ($) {
+
+    $('#form_qcode').submit(function() {
+        //$('#tag_submit').attr('disabled', true);
+
+        var form_data = new FormData();
+        form_data.append('do', 'create_qcode');
+        form_data.append('action', 'gfth_get_results');
+        form_data.append('gfth_nonce', gfth_vars.gfth_nonce);
+        form_data.append('tag', $('#tags').find(":selected").val());
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: form_data,
+            success: function (response) {
+                //$('#tag_submit').attr('disabled', false);
+                //$('#qcode_response').html(response);
+                var w = window.open(response, 'CSVDownload');
+            }});
+        return false;
+    });
+
     $('#form_add_product').submit(function () {
 
         $('#gfth_loading').show();
@@ -14,8 +39,6 @@ jQuery(document).ready(function ($) {
         form_data.append('do', 'upload_products');
         form_data.append('action', 'gfth_get_results');
         form_data.append('gfth_nonce', gfth_vars.gfth_nonce);
-
-
 
         $.ajax({
             url: ajaxurl,

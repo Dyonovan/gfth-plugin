@@ -3,7 +3,7 @@
 /*
 Plugin Name: GFTH Custom Plugin
 Description: Custom Plugin for GiftsFromTheHeart.ca
-Version: 1.1
+Version: 1.2
 Author: James Rogers
 Author URI: http://dyonovan.com
 */
@@ -14,6 +14,7 @@ require_once(GFTH_PLUGIN_DIR . '/functions/new_products.php');
 require_once(GFTH_PLUGIN_DIR . '/functions/prices_export.php');
 require_once(GFTH_PLUGIN_DIR . '/functions/prices_import.php');
 require_once(GFTH_PLUGIN_DIR . '/functions/delete_drafts.php');
+require_once(GFTH_PLUGIN_DIR . '/functions/create_qcode.php');
 
 
 // Hook for adding admin menus
@@ -95,6 +96,24 @@ function gfth_top_page()
 			</p>
 			<div id="fix_response"
 		</div>
+        <h3>Create Q-Codes</h3>
+        <div>
+            <form id="form_qcode" class="qcode" method="post">
+                <select name="tags" id="tags">
+                    <option value="default">Select Tag....</option>
+                    <?php
+                        $tags = get_terms('product_tag');
+                        foreach($tags as $tag) {
+                            echo '<option value="' . $tag->slug . '">' . $tag->slug . '</option>';
+                        }
+                    ?>
+                </select>
+                <input type="submit" id="tag_submit" class="button-primary" name="tag_submit" value="Create QCodes">
+            </form>
+        </div>
+        <div id="qcode_response">
+
+        </div>
 	</div>
 	<?php
 }
@@ -149,7 +168,7 @@ function gfth_process_ajax()
 		new prices_import($csvAsArray);
 
 		exit;
-	} else {
+	} else if($_POST['do'] == 'upload_products') {
 
 		if (empty($_FILES['csv']['name']) || $_FILES['csv']['error'] > 0) {
 			echo "<script type='text/javascript'> alert('Please select a valid file...')</script>";
@@ -164,7 +183,9 @@ function gfth_process_ajax()
 			new import_new_products($csvAsArray, false);
 		else
 			echo "<script type='text/javascript'> alert('Dyo screwed up...')</script>";
-	}
+	} else if($_POST['do'] == 'create_qcode') {
+	    new create_qcode($_POST['tag']);
+    }
 	exit;
 }
 add_action('wp_ajax_gfth_get_results', 'gfth_process_ajax');
