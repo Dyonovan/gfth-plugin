@@ -52,15 +52,18 @@ class create_qcode
                 $temp = array();
                 $output_list .= "\n\n" . strip_tags($post->post_title) . "\n";
                 foreach ($variations as $var) {
-                    $output_list .= $var['sku'] . ' - ' . $var['attributes']['attribute_pa_size'] . ' - ' . $var['display_price'] . "\n";
                     $temp[] = array(
-                        'BB' => (substr($var['sku'], -2) === 'BB' ? 'Yes' : 'No'),
+                        'BB' => (substr($var['sku'], -2) === 'BB' ? 1 : 0),
                         'Sku' => $var['sku'],
                         'Size' => $var['attributes']['attribute_pa_size'],
                         'Price' => $var['display_price']
                     );
                 }
-                $sorted = $this->array_orderby($temp, 'BB', SORT_ASC, 'Size', SORT_ASC);
+                $sorted = $this->array_orderby($temp, 'BB', SORT_ASC, 'Price', SORT_ASC);
+
+                foreach ($sorted as $ind) {
+                    $output_list .= $ind['Sku'] . ' - ' . $ind['Size'] . ' - ' . $ind['Price'] . "\n";
+                }
 
                 $temp_array = array(
                     'Title' => strip_tags($post->post_title),
@@ -70,7 +73,7 @@ class create_qcode
                 $json = json_encode($temp_array);
 
                 $filename = strip_tags($post->post_title) . '.png';
-                QRcode::png($json, $tempDir.$filename, QR_ECLEVEL_M);
+                dQRcode::png($json, $tempDir.$filename, QR_ECLEVEL_M);
             }
 
             wp_reset_postdata();
