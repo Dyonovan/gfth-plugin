@@ -5,7 +5,14 @@ class import_new_products
 
     function __construct($csv, $test)
     {
-        set_time_limit(0);
+        $timeout = 600;
+        if( !ini_get( 'safe_mode' ) )
+            @set_time_limit( $timeout );
+
+        @ini_set( 'memory_limit', WP_MAX_MEMORY_LIMIT );
+        @ini_set( 'max_execution_time', $timeout );
+
+        //set_time_limit(0);
         wp_suspend_cache_invalidation(true);
         wp_suspend_cache_addition(true);
         //wp_defer_term_counting(true);

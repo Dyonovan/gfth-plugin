@@ -73,7 +73,7 @@ class create_qcode
                 $json = json_encode($temp_array);
 
                 $filename = strip_tags($post->post_title) . '.png';
-                dQRcode::png($json, $tempDir.$filename, QR_ECLEVEL_M);
+                QRcode::png($json, $tempDir.$filename, QR_ECLEVEL_M);
             }
 
             wp_reset_postdata();
