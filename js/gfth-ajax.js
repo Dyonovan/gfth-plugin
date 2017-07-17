@@ -27,6 +27,27 @@ jQuery(document).ready(function ($) {
         return false;
     });
 
+    $('#form_import_qrcode').submit(function() {
+
+        var form_data = new FormData();
+        form_data.append('csv', $('input[type=file]')[2].files[0]);
+        form_data.append('do', 'process_qrcode');
+        form_data.append('action', 'gfth_get_results');
+        form_data.append('gfth_nonce', gfth_vars.gfth_nonce);
+
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: form_data,
+            success: function (response) {
+                var w = window.open(response, 'CSVDownload');
+            }});
+        return false;
+    });
+
     $('#form_add_product').submit(function () {
 
         $('#gfth_loading').show();

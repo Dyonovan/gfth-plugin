@@ -15,6 +15,7 @@ require_once(GFTH_PLUGIN_DIR . '/functions/prices_export.php');
 require_once(GFTH_PLUGIN_DIR . '/functions/prices_import.php');
 require_once(GFTH_PLUGIN_DIR . '/functions/delete_drafts.php');
 require_once(GFTH_PLUGIN_DIR . '/functions/create_qcode.php');
+require_once(GFTH_PLUGIN_DIR . '/functions/create_qcode_import.php');
 
 
 // Hook for adding admin menus
@@ -114,6 +115,16 @@ function gfth_top_page()
         <div id="qcode_response">
 
         </div>
+        <h3>QR-Code from Import</h3>
+        <div>
+            <form id="form_import_qrcode" class="import_qrcode" method="post">
+                <input id="order_file" type="file" name="order_csv" value="" accept=".rpt"/><br>
+                <input type="submit" id="qr_order_submit" class="button-primary" name="qr_order_submit" value="Upload Order">
+            </form>
+        </div>
+        <div id="qr_order_response">
+
+        </div>
 	</div>
 	<?php
 }
@@ -185,6 +196,15 @@ function gfth_process_ajax()
 			echo "<script type='text/javascript'> alert('Dyo screwed up...')</script>";
 	} else if($_POST['do'] == 'create_qcode') {
 	    new create_qcode($_POST['tag']);
+    } else if ($_POST['do'] == 'process_qrcode') {
+        if (empty($_FILES['csv']['name']) || $_FILES['csv']['error'] > 0) {
+            echo "<script type='text/javascript'> alert('Please select a valid file...')</script>";
+            exit;
+        }
+        $tmpName = $_FILES['csv']['tmp_name'];
+        $csvAsArray = array_map('str_getcsv', file($tmpName));
+
+        new create_qcode_import($csvAsArray);
     }
 	exit;
 }
