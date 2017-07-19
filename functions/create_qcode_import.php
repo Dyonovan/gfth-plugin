@@ -11,6 +11,15 @@ class create_qcode_import
 
     function __construct($csv)
     {
+        $timeout = 600;
+        if( !ini_get( 'safe_mode' ) )
+            @set_time_limit( $timeout );
+
+        @ini_set( 'memory_limit', WP_MAX_MEMORY_LIMIT );
+        @ini_set( 'max_execution_time', $timeout );
+
+        setlocale(LC_MONETARY, 'en_US.UTF-8');
+
         ob_start();
 
         include(GFTH_PLUGIN_DIR . '/functions/phpqrcode/qrlib.php');
@@ -46,7 +55,7 @@ class create_qcode_import
                         'BB' => (substr($var['sku'], -2) === 'BB' ? 1 : 0),
                         'Sku' => $var['sku'],
                         'Size' => $var['attributes']['attribute_pa_size'],
-                        'Price' => $var['display_price']
+                        'Price' => money_format('%.2n',($var['display_price'] + 0.05) / 2)
                     );
                 }
                 $sorted = $this->array_orderby($temp, 'BB', SORT_ASC, 'Price', SORT_ASC);

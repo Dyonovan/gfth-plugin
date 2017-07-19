@@ -17,6 +17,8 @@ class create_qcode
     {
         ob_start();
 
+        setlocale(LC_MONETARY, 'en_US.UTF-8');
+
         include(GFTH_PLUGIN_DIR . '/functions/phpqrcode/qrlib.php');
 
         if (!file_exists(get_home_path() . 'QRCodes')) {
@@ -56,7 +58,7 @@ class create_qcode
                         'BB' => (substr($var['sku'], -2) === 'BB' ? 1 : 0),
                         'Sku' => $var['sku'],
                         'Size' => $var['attributes']['attribute_pa_size'],
-                        'Price' => $var['display_price']
+                        'Price' => money_format('%.2n',($var['display_price'] + 0.05) / 2)
                     );
                 }
                 $sorted = $this->array_orderby($temp, 'BB', SORT_ASC, 'Price', SORT_ASC);
