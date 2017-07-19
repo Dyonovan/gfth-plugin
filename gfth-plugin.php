@@ -197,7 +197,7 @@ function gfth_process_ajax()
 	} else if($_POST['do'] == 'create_qcode') {
 	    new create_qcode($_POST['tag']);
     } else if ($_POST['do'] == 'process_qrcode') {
-        if (empty($_FILES['csv']['name']) || $_FILES['csv']['error'] > 0) {
+        if (empty($_FILES) || $_FILES['csv']['error'] > 0 ) {
             echo "<script type='text/javascript'> alert('Please select a valid file...')</script>";
             exit;
         }

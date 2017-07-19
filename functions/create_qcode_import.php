@@ -79,7 +79,8 @@ class create_qcode_import
         file_put_contents($tempDir . 'qrcodes.txt', $output_list);
 
         //Create zip
-        $zipname = 'qrcodes.zip';
+        $date = date('m-d-Y-h-i-s-a', time());
+        $zipname = $date . '-qrcodes.zip';
         $zip = new ZipArchive();
 
         //TODO check if exists if it does OVERWRITE else CREATE
