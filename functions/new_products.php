@@ -3,6 +3,8 @@
 class import_new_products
 {
 
+    public $bbGlobal;
+
     function __construct($csv, $test)
     {
         $timeout = 600;
@@ -20,7 +22,7 @@ class import_new_products
         $title = '';
         $first_run = true;
         $post_id = false;
-        $bb = 'No';
+        $this->bbGlobal = 'No';
         $countProduct = 0;
         $countVariation = 0;
         $countProductFailed = 0;
@@ -42,7 +44,7 @@ class import_new_products
 
                 //Add product
                 $title = trim($line[0]);
-                $bb = $line[3];
+                $this->bbGlobal = $line[3];
                 $post_id = $this->add_post($line);
                 if (!$post_id)
                     $countProductFailed++;
@@ -91,6 +93,7 @@ class import_new_products
 
     function add_variation($title, $data, $post_id, $bb)
     {
+
         echo 'Adding ' . $title . ' - ' . $data[4] . ' Variation...';
         //Add Post data for variation
         $post = array(
@@ -118,15 +121,17 @@ class import_new_products
                 'is_create_taxonomy_terms' => '1'
             ));
 
-        $the_data = array_merge($the_data, Array(
-            'pa_barnboard-frame' => Array(
-                'name' => 'pa_barnboard-frame',
-                'value' => '',
-                'is_visible' => '1',
-                'is_variation' => '1',
-                'is_taxonomy' => '1',
-                'is_create_taxonomy_terms' => '1'
-            )));
+        if ($this->bbGlobal !== 'No') {
+            $the_data = array_merge($the_data, Array(
+                'pa_barnboard-frame' => Array(
+                    'name' => 'pa_barnboard-frame',
+                    'value' => '',
+                    'is_visible' => '1',
+                    'is_variation' => '1',
+                    'is_taxonomy' => '1',
+                    'is_create_taxonomy_terms' => '1'
+                )));
+        }
         update_post_meta($new_post_id, '_product_attributes', $the_data);
 
         //Set sizes in both product and variable
@@ -143,7 +148,11 @@ class import_new_products
         update_post_meta($new_post_id, '_sku', $data[2]);
         update_post_meta($new_post_id, '_price', str_replace('$', '', $data[7]));
         update_post_meta($new_post_id, '_regular_price', str_replace('$', '', $data[7]));
-        update_post_meta($new_post_id, 'attribute_pa_barnboard-frame', strtolower($bb));
+
+        if ($this->bbGlobal !== 'No' && strtolower($bb) !== 'no')
+            update_post_meta($new_post_id, 'attribute_pa_barnboard-frame', 'yes');
+        else
+            update_post_meta($new_post_id, 'attribute_pa_barnboard-frame', 'no');
         update_post_meta($new_post_id, '_stock_status', 'instock');
         update_post_meta($new_post_id, '_visibility', 'visible');
         if (!empty($data[5])) {
@@ -152,14 +161,17 @@ class import_new_products
             update_post_meta($new_post_id, 'variation_group_of_quantity', $data[6]);
         }
 
-        if ($bb == 'No') {
+        if ($bb == 'No' && $this->bbGlobal !== 'No') {
             $oldSku = $data[2];
             $data[2] = substr($oldSku, 0, 6) . 'BB';
             $oldPrice = $data[7];
             $newPrice = $this->get_new_price((string)$size->slug, $oldPrice, $oldSku, $title);
-            $data[7] = $newPrice;
-            $this->add_variation($title, $data, $post_id, 'Yes');
+            if ($data[7] != $newPrice) {
+                $data[7] = $newPrice;
+                $this->add_variation($title, $data, $post_id, 'Yes');
+            }
         }
+
         echo '<span style="color: #00ff00">Success</span><br>';
 
         return array(true, $post_id);
@@ -234,7 +246,7 @@ class import_new_products
         $the_data = array_merge($the_data, Array(
             'pa_barnboard-frame' => Array(
                 'name' => 'pa_barnboard-frame',
-                'value' => 'Yes',
+                'value' => '',
                 'is_visible' => '1',
                 'is_variation' => '1',
                 'is_taxonomy' => '1')));
