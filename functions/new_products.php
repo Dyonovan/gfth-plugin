@@ -290,13 +290,13 @@ class import_new_products
             case "6x8":
                 break;
             case "10x18":
-                $price += 10;
+                //$price += 10;
                 break;
             case "12x16":
-                $price += 10;
+                //$price += 10;
                 break;
             case "14x14":
-                $price += 10;
+                //$price += 10;
                 break;
             case "20x26":
                 $price += 20;

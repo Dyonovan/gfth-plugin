@@ -70,8 +70,8 @@ class create_qcode_import
                 );
 
                 $json = json_encode($temp_array);
-
                 $filename = strip_tags($post->post_title) . '.png';
+                $filename = mb_ereg_replace("([^\w\s\d\-_~,;\[\]\(\).])", '', $filename);
                 QRcode::png($json, $tempDir . $filename, QR_ECLEVEL_M);
                 $good_count += 1;
             } else {
